@@ -14,6 +14,7 @@ namespace XIVApp
 {
     // We are using FFACETools
     using FFACETools;
+    using XIVApp.Classes;
 
     public partial class Form1 : Form
     {
@@ -25,7 +26,7 @@ namespace XIVApp
 
         // Process found or not
         private bool XIFound = false;
-        
+
 
         // Initialize
         public Form1()
@@ -127,10 +128,10 @@ namespace XIVApp
             int i = 0;
             foreach (FFACE Character in Sessions)
             {
-                DebugBox.AppendText(i +". Name: " + Character.Player.Name + " (" + Character.Player.ID + ")" + Environment.NewLine);
+                DebugBox.AppendText(i + ". Name: " + Character.Player.Name + " (" + Character.Player.ID + ")" + Environment.NewLine);
                 i++;
             }
-            
+
             // Seperator
             DebugBox.AppendText("----------------------------------------------------------------" + Environment.NewLine);
         }
@@ -150,7 +151,7 @@ namespace XIVApp
             // Set the index of the selected character
             int CharacterIndex = CharacterList.SelectedIndex;
             Session = Sessions.ElementAt(CharacterIndex);
-            
+
             // Display Info in debug
             DebugBox.AppendText("Active Character: " + Session.Player.Name + Environment.NewLine);
 
@@ -178,80 +179,90 @@ namespace XIVApp
             DebugBox.AppendText("Power Leveller: " + PowerSession.Player.Name + Environment.NewLine);
         }
 
+        /// <summary>
+        /// The window in which we are allowed to take action when 
+        /// debuffs are casted on us or the person being powerleveled. 
+        /// </summary>
+        TimeSortedList<FFACETools.FFACE.ChatTools.ChatLine> ActionableWindow =
+            new TimeSortedList<FFACETools.FFACE.ChatTools.ChatLine>(35, 5);
+
         // Parse Chatlog
         private void Chatlogtimer_Tick(object sender, EventArgs e)
         {
-            // Get our new color coded line
             FFACE.ChatTools.ChatLine NewLine = new FFACE.ChatTools.ChatLine();
-            NewLine = Session.Chat.GetNextLine(LineSettings.CleanAll);
-            string NewLine_Text = "";
 
-            // Check to make sure we have text
-            if (NewLine != null)
+            // Save and output all new chatlines. 
+            while (NewLine != null)
             {
-                NewLine_Text = NewLine.Text;
-                // Change the color of the line to match the color in FFXI
-                ChatLog.SelectionColor = NewLine.Color;
+                // Get our new color coded line            
+                NewLine = Session.Chat.GetNextLine(LineSettings.CleanAll);
 
-                // Output our line to the textbox
-                ChatLog.AppendText("[" + NewLine.NowDate + "] " + NewLine_Text + Environment.NewLine);
+                // Check to make sure we have text
+                if (NewLine != null)
+                {
+                    // Change the color of the line to match the color in FFXI
+                    ChatLog.SelectionColor = NewLine.Color;
 
-                // Scroll our chatlog window to the last line
-                ChatLog.ScrollToCaret();
+                    // Output our line to the textbox
+                    ChatLog.AppendText("[" + NewLine.NowDate + "] " + NewLine.Text + Environment.NewLine);
+
+                    // Scroll our chatlog window to the last line
+                    ChatLog.ScrollToCaret();
+
+                    // Store the chatline for later use casting NA spells. 
+                    ActionableWindow.AddItem(NewLine.NowDate, NewLine);
+                }
             }
 
             //--------------------------------------------------------------------------------
             // PL Auto na spells
             if (AutoNASpells.Checked)
             {
-                // Check to ensure line not null
-                if (!string.IsNullOrEmpty(NewLine_Text))
+                // Dictionary of conditions and what na spell to repel them with. 
+                Dictionary<String, String> EffectNaDictionary = new Dictionary<string, string>()
                 {
-                    // Check for paralyzed
-                    if (NewLine_Text.Contains(PowerSession.Target.Name) && NewLine_Text.Contains("paralyzed"))
-                    {
-                        // Fix
-                        string Command = "/ma \"Paralyna\" " + PowerSession.Target.Name + "";
-                        PowerSession.Windower.SendString(Command);
-                    }
+                    {"paralyzed", "Paralyna"},
+                    {"blind", "Blindna"},
+                    {"poisoned", "Poisona"},
+                    {"sleep", "Cure"}
+                };
 
-                    // Check for blind
-                    if (NewLine_Text.Contains(PowerSession.Target.Name) && NewLine_Text.Contains("blind"))
-                    {
-                        // Fix
-                        string Command = "/ma \"Blindna\" " + PowerSession.Target.Name + "";
-                        PowerSession.Windower.SendString(Command);
-                    }
+                var lines = new List<FFACE.ChatTools.ChatLine>();
+                
+                foreach (var debuff in EffectNaDictionary.Keys)
+                {
+                    lines = ActionableWindow
+                        .GetValuesInWindow()
+                        .Where(x => x.Text.Contains(debuff))
+                        .ToList();
+                }
 
-                    // Check for poisoned
-                    if (NewLine_Text.Contains(PowerSession.Target.Name) && NewLine_Text.Contains("poisoned"))
+                // Foreach line in our 30 second window. 
+                foreach (var line in lines)
+                {
+                    // For all debuffs, if they are detected in the current line, cast a spell to remove them. 
+                    foreach (KeyValuePair<String, String> debuffNaPair in EffectNaDictionary)
                     {
-                        // Fix
-                        string Command = "/ma \"Poisona\" " + PowerSession.Target.Name + "";
-                        PowerSession.Windower.SendString(Command);
-                    }
-
-                    // Check for sleep
-                    if (NewLine_Text.Contains(PowerSession.Target.Name) && NewLine_Text.Contains("sleep"))
-                    {
-                        // Fix
-                        string Command = "/ma \"Cure\" " + PowerSession.Target.Name + "";
-                        PowerSession.Windower.SendString(Command);
+                        if (line.Text.Contains(PowerSession.Target.Name) && line.Text.Contains(debuffNaPair.Key))
+                        {
+                            string Command = "/ma " + "\"" + debuffNaPair.Value + "\" " + PowerSession.Target.Name;
+                            PowerSession.Windower.SendString(Command);
+                        }
                     }
                 }
             }
         }
 
         // Buff Information
-        private const int buff_Protect = (1800*2);
+        private const int buff_Protect = (1800 * 2);
         private bool buff_Protect_on = false;
         private int buff_Protect_timer = 0;
 
-        private const int buff_Shell = (1800*2);
+        private const int buff_Shell = (1800 * 2);
         private bool buff_Shell_on = false;
         private int buff_Shell_timer = 0;
 
-        private const int casting_duration = (5*2);
+        private const int casting_duration = (5 * 2);
         private int casting_timer = 0;
         private bool casting = false;
 
@@ -259,7 +270,7 @@ namespace XIVApp
 
         private bool FollowingCharacter = false;
         private bool LostCharacter = false;
-        
+
         // Updates character timer every second
         private void CharacterTimer_Tick(object sender, EventArgs e)
         {
@@ -315,8 +326,8 @@ namespace XIVApp
                     int percent2 = 50;
                     if (!String.IsNullOrEmpty(PowerSession.Target.Name))
                     {
-                       percent = Convert.ToInt16(AutoHealPercent.Text);
-                       percent2 = Convert.ToInt16(AutoHealPercent2.Text);
+                        percent = Convert.ToInt16(AutoHealPercent.Text);
+                        percent2 = Convert.ToInt16(AutoHealPercent2.Text);
                     }
 
                     if (PowerSession.Target.HPPCurrent < percent2 && PowerSession.Target.Name == PLMemberA.Text && PowerSession.Target.Status != Status.Dead2)
@@ -423,7 +434,7 @@ namespace XIVApp
                 Raising_Target = false;
                 DeathTimer.Enabled = true;
             }
-                
+
 
         }
 
@@ -466,7 +477,7 @@ namespace XIVApp
 
         // Waypoints
         private List<float> Way_Points_X = new List<float>();
-        private List<float> Way_Points_Z = new List<float>(); 
+        private List<float> Way_Points_Z = new List<float>();
 
         // Lists
         private List<String> Valid_Mobs = new List<String>();
@@ -654,13 +665,13 @@ namespace XIVApp
                     Session.Windower.SendKeyPress(KeyCode.NP_Number7);
                     LevellingLog.AppendText("[" + DateTime.Now.ToLongTimeString() + "] " + "Seem to have lost sight of mob... Start over." + Environment.NewLine);
                 }
-				
-				//if conditions above are met, we may want to not do this, not sure yet.
+
+                //if conditions above are met, we may want to not do this, not sure yet.
                 distance = Session.Navigator.DistanceTo(Session.Target.PosX, Session.Target.PosZ);
                 ShowDistance.Text = distance.ToString();
 
                 int check_distance = Convert.ToInt16(distance);
-                distanceinfo.Text = check_distance + " <> " + last_dist + " (" + last_dist_duration  + ")";
+                distanceinfo.Text = check_distance + " <> " + last_dist + " (" + last_dist_duration + ")";
                 if (last_dist == check_distance)
                 {
                     if (last_dist_duration > 4)
@@ -829,7 +840,7 @@ namespace XIVApp
                         // TODO: Change this so it can be used for trial NMs
                         int random_skill = new Random().Next(0, (Skill_List_start.Count - 1));
                         string Skill = Skill_List_start.ElementAt(random_skill);
-                        
+
                         if (IsSpell(Skill.Split(' ')))
                         {
 
@@ -855,7 +866,7 @@ namespace XIVApp
                         {
                             Session.Windower.SendString(Skill);
                             LevellingLog.AppendText("[" + DateTime.Now.ToLongTimeString() + "] " + ("[Skill-Start] " + Skill + Environment.NewLine));
-                            
+
                         }
                     }
                 }
@@ -883,13 +894,13 @@ namespace XIVApp
                         Session.Windower.SendKeyPress(KeyCode.EscapeKey);
                     }
                     else if (NewLine_Text.Contains("Unable to see the " + Session.Target.Name))
-                        {
-                            //.. do something about it!
-                            LevellingLog.AppendText("[" + DateTime.Now.ToLongTimeString() + "] " + "Cannot see target" + Environment.NewLine);
-                            Session.Windower.SendString("/follow");
-                            Thread.Sleep(500);
-                            Session.Windower.SendKeyPress(KeyCode.NP_Number7);
-                        }
+                    {
+                        //.. do something about it!
+                        LevellingLog.AppendText("[" + DateTime.Now.ToLongTimeString() + "] " + "Cannot see target" + Environment.NewLine);
+                        Session.Windower.SendString("/follow");
+                        Thread.Sleep(500);
+                        Session.Windower.SendKeyPress(KeyCode.NP_Number7);
+                    }
                 }
                 #endregion
 
@@ -973,7 +984,7 @@ namespace XIVApp
                     Thread.Sleep(3000);
                 }
 
-                if (Resting && ( RestBelowHPCheckbox.Checked && RestBelowMPCheckbox.Checked ) && ( Session.Player.HPPCurrent >= RestUntil_HPP && Session.Player.MPCurrent >= RestUntil_MP ))
+                if (Resting && (RestBelowHPCheckbox.Checked && RestBelowMPCheckbox.Checked) && (Session.Player.HPPCurrent >= RestUntil_HPP && Session.Player.MPCurrent >= RestUntil_MP))
                 {
                     Session.Windower.SendString("/heal off");
                     Resting = false;
@@ -1022,7 +1033,7 @@ namespace XIVApp
                             // End of ...End of fight :D
                             End_Of_Fight = false;
                             Scanning_for_mobs = true;
-                            LevellingLog.AppendText("[" + DateTime.Now.ToLongTimeString() + "] " + ( "---[Start New]---" + Environment.NewLine ));
+                            LevellingLog.AppendText("[" + DateTime.Now.ToLongTimeString() + "] " + ("---[Start New]---" + Environment.NewLine));
                             Start_Delay_timer = 0;
                         }
                         else
@@ -1056,7 +1067,7 @@ namespace XIVApp
                 Session.Windower.SendString("/follow <t>");
             }
             #endregion
-           
+
             // Scroll to bottom of log
             LevellingLog.ScrollToCaret();
 
@@ -1229,7 +1240,7 @@ namespace XIVApp
         {
             Skill_List_start.Clear(); Skill_List_end.Clear(); Skill_List_fighting.Clear();
             SkillBoxSTART.Items.Clear(); SkillBoxEND.Items.Clear(); SkillBoxFIGHTING.Items.Clear();
-        }    
+        }
 
         private float Going_To_X, Going_To_Z;
         private int List_Position = 0;
@@ -1362,8 +1373,8 @@ namespace XIVApp
             my_static.Debugger.DebugLines.Add("------------------------------------------------");
             my_static.Debugger.DebugLines.Add("is_Mob_Valid && !Session.Navigator.IsRunning() && !Running_To_Mob && !Fighting && !End_Of_Fight");
             my_static.Debugger.DebugLines.Add(is_Mob_Valid.ToString() + Session.Navigator.IsRunning().ToString() + Running_To_Mob + Fighting + End_Of_Fight);
-            
-        }  
+
+        }
 
         // Reset Navigation
         private void button3_Click_1(object sender, EventArgs e)
@@ -1388,12 +1399,12 @@ namespace XIVApp
                 StartBotting.Enabled = true;
             }
         }
-        
+
         // Removes a target from valid mob list
         private void RemoveTargetFromList_Click(object sender, EventArgs e)
         {
             int RemovedSoFar = 0;
-            foreach(int indexChecked in ValidMobList.CheckedIndices) 
+            foreach (int indexChecked in ValidMobList.CheckedIndices)
             {
                 ValidMobList.Items.RemoveAt(indexChecked - RemovedSoFar);
                 Valid_Mobs.RemoveAt(indexChecked - RemovedSoFar);
@@ -1514,7 +1525,7 @@ namespace XIVApp
             }
         }
 
-        private void DistanceBeforeAction_TextChanged (object sender, EventArgs e)
+        private void DistanceBeforeAction_TextChanged(object sender, EventArgs e)
         {
 
         }
@@ -2069,7 +2080,7 @@ namespace XIVApp
             // Follow
             Command = "/follow";
             PowerSession.Windower.SendString(Command);
-            
+
         }
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
@@ -2178,7 +2189,7 @@ namespace XIVApp
         }
         #endregion
 
-        private void ChatlogBox_KeyPress (object sender, KeyPressEventArgs e)
+        private void ChatlogBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
             {
@@ -2189,15 +2200,15 @@ namespace XIVApp
             }
         }
 
-        private void button1_Click (object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
             //FormAdditionalSettings.TopMost = true;
             //FormAdditionalSettings.Show();
             SerializeDataToXML();
         }
         //-----------------------------------------------------------------------------------------------
-        
-#region Serialization of data
+
+        #region Serialization of data
         // Reference: http://www.jonasjohn.de/snippets/csharp/xmlserializer-example.htm
         private void SerializeDataToXML()
         {
@@ -2207,9 +2218,9 @@ namespace XIVApp
             //datatoxml.Settings.Add("BBB");
             //datatoxml.Settings.Add("CCC");
 
-            XmlSerializer SerializerXML = new XmlSerializer(typeof (DataSerialization));
+            XmlSerializer SerializerXML = new XmlSerializer(typeof(DataSerialization));
             TextWriter XMLOutputFile = new StreamWriter(@"settings.xml");
-            SerializerXML.Serialize(XMLOutputFile,datatoxml);
+            SerializerXML.Serialize(XMLOutputFile, datatoxml);
             XMLOutputFile.Close();
             DeserializeXMLToData();
 
@@ -2220,13 +2231,13 @@ namespace XIVApp
             {
                 return false;
             }
-            XmlSerializer SerializerXML = new XmlSerializer(typeof (DataSerialization));
-            FileStream XMLDataToRead = new FileStream(@"settings.xml",FileMode.Open, FileAccess.Read,FileShare.Read);
+            XmlSerializer SerializerXML = new XmlSerializer(typeof(DataSerialization));
+            FileStream XMLDataToRead = new FileStream(@"settings.xml", FileMode.Open, FileAccess.Read, FileShare.Read);
             DataSerialization XMLData = (DataSerialization)SerializerXML.Deserialize(XMLDataToRead);
             //MessageBox.Show(XMLData.Settings.ElementAt(0));
             return true;
         }
-#endregion
+        #endregion
 
         private bool IsAbilityActive(StatusEffect ability)
         {
@@ -2247,7 +2258,7 @@ namespace XIVApp
 
             //throw new NotImplementedException();
         }
-        private void RestUntilMPTextBox_TextChanged (object sender, EventArgs e)
+        private void RestUntilMPTextBox_TextChanged(object sender, EventArgs e)
         {
             try
             {
@@ -2265,7 +2276,7 @@ namespace XIVApp
             }
         }
 
-        private void RestBelowMPTextbox_TextChanged (object sender, EventArgs e)
+        private void RestBelowMPTextbox_TextChanged(object sender, EventArgs e)
         {
             try
             {
@@ -2283,7 +2294,7 @@ namespace XIVApp
             }
         }
 
-        private void RestUntilHPPTextbox_TextChanged (object sender, EventArgs e)
+        private void RestUntilHPPTextbox_TextChanged(object sender, EventArgs e)
         {
             try
             {
@@ -2301,7 +2312,7 @@ namespace XIVApp
             }
         }
 
-        private void RestBelowTextbox_TextChanged (object sender, EventArgs e)
+        private void RestBelowTextbox_TextChanged(object sender, EventArgs e)
         {
             try
             {
@@ -2316,7 +2327,7 @@ namespace XIVApp
             }
         }
 
-        private void RestAtEnd_CheckedChanged (object sender, EventArgs e)
+        private void RestAtEnd_CheckedChanged(object sender, EventArgs e)
         {
             // Set focus to tab 6 (Adv Settings)
             if (RestAtEnd.Checked)
@@ -2328,7 +2339,7 @@ namespace XIVApp
 
         private void MoveItemsToSatchel()
         {
-            
+
         }
     }
 }
