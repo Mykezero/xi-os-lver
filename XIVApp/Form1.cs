@@ -461,7 +461,7 @@ namespace XIVApp
         private int Gained_Levels_Value = 0;
         private int Current_Level = 0;
         private int Killed_Mob_Amount = 0;
-        private int TP_To_Ws = 100;
+        private int TP_To_Ws = 1000;
         private int TP_To_Ws_Mob_HPP = 0;
         public static int Rest_HPP = 80;
         public static int RestUntil_HPP = 90;
@@ -916,7 +916,7 @@ namespace XIVApp
                         LevellingLog.AppendText("[" + DateTime.Now.ToLongTimeString() + "] " + "[Skill-Fighting] " + Skill + Environment.NewLine);
                     }
                     // WS when mob hits a certain HPP only
-                    if (Session.Player.TPCurrent >= 100 && TP_To_Ws_Mob_HPP > 0)
+                    if (Session.Player.TPCurrent >= 1000 && TP_To_Ws_Mob_HPP > 0)
                     {
                         if (Session.Target.HPPCurrent <= TP_To_Ws_Mob_HPP)
                         {
@@ -1507,7 +1507,7 @@ namespace XIVApp
             }
             catch (Exception exc)
             {
-                TPPercentToWS.Text = "100";
+                TPPercentToWS.Text = "1000";
                 DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
             }
         }

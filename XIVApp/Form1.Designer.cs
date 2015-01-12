@@ -1183,7 +1183,7 @@ namespace XIVApp
             // 
             this.TPPercentToWS.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.TPPercentToWS.Location = new System.Drawing.Point(396, 89);
-            this.TPPercentToWS.MaxLength = 3;
+            this.TPPercentToWS.MaxLength = 4;
             this.TPPercentToWS.Name = "TPPercentToWS";
             this.TPPercentToWS.Size = new System.Drawing.Size(38, 23);
             this.TPPercentToWS.TabIndex = 18;
