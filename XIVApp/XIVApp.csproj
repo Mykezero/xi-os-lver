@@ -148,10 +148,10 @@
   <ItemGroup>
     <None Include="Resources\action_delete.png" />
     <Content Include="FFACE.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="FFACETools.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="spgains.ico" />
   </ItemGroup>

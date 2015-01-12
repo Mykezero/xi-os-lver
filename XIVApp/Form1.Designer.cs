@@ -889,7 +889,7 @@ namespace XIVApp
             this.WPRecord.Name = "WPRecord";
             this.WPRecord.Size = new System.Drawing.Size(57, 25);
             this.WPRecord.TabIndex = 8;
-            this.WPRecord.Text = Resources.Form1_WPRecord_Click_Record;
+            this.WPRecord.Text = global::XIVApp.Properties.Resources.Form1_WPRecord_Click_Record;
             this.WPRecord.UseVisualStyleBackColor = false;
             this.WPRecord.Click += new System.EventHandler(this.WPRecord_Click);
             // 
@@ -1187,7 +1187,7 @@ namespace XIVApp
             this.TPPercentToWS.Name = "TPPercentToWS";
             this.TPPercentToWS.Size = new System.Drawing.Size(38, 23);
             this.TPPercentToWS.TabIndex = 18;
-            this.TPPercentToWS.Text = "100";
+            this.TPPercentToWS.Text = "1000";
             this.TPPercentToWS.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.TPPercentToWS.TextChanged += new System.EventHandler(this.TPPercentToWS_TextChanged);
             // 
@@ -1425,7 +1425,7 @@ namespace XIVApp
             this.label22.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label22.Location = new System.Drawing.Point(6, 40);
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(59, 15);
+            this.label22.Size = new System.Drawing.Size(57, 15);
             this.label22.TabIndex = 4;
             this.label22.Text = "Lvs Total:";
             // 
@@ -1446,7 +1446,7 @@ namespace XIVApp
             this.label21.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label21.Location = new System.Drawing.Point(6, 22);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(62, 15);
+            this.label21.Size = new System.Drawing.Size(61, 15);
             this.label21.TabIndex = 2;
             this.label21.Text = "EXP Total:";
             // 
@@ -1639,7 +1639,7 @@ namespace XIVApp
             this.TestWPBtn.Name = "TestWPBtn";
             this.TestWPBtn.Size = new System.Drawing.Size(78, 27);
             this.TestWPBtn.TabIndex = 10;
-            this.TestWPBtn.Text = Resources.Form1_button3_Click_Test_WPs;
+            this.TestWPBtn.Text = global::XIVApp.Properties.Resources.Form1_button3_Click_Test_WPs;
             this.TestWPBtn.UseVisualStyleBackColor = true;
             this.TestWPBtn.Click += new System.EventHandler(this.button3_Click);
             // 
@@ -1662,7 +1662,7 @@ namespace XIVApp
             this.StartBotting.Name = "StartBotting";
             this.StartBotting.Size = new System.Drawing.Size(78, 42);
             this.StartBotting.TabIndex = 2;
-            this.StartBotting.Text = Resources.Form1_StartBotting_Click_START;
+            this.StartBotting.Text = global::XIVApp.Properties.Resources.Form1_StartBotting_Click_START;
             this.StartBotting.UseVisualStyleBackColor = true;
             this.StartBotting.Click += new System.EventHandler(this.StartBotting_Click);
             // 
@@ -2197,7 +2197,7 @@ namespace XIVApp
             this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.label6.Location = new System.Drawing.Point(25, 91);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(14, 15);
+            this.label6.Size = new System.Drawing.Size(12, 15);
             this.label6.TabIndex = 3;
             this.label6.Text = "1";
             // 
@@ -2215,7 +2215,7 @@ namespace XIVApp
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(7, 26);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(40, 15);
+            this.label5.Size = new System.Drawing.Size(38, 15);
             this.label5.TabIndex = 1;
             this.label5.Text = "Spell1";
             // 
