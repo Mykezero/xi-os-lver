@@ -502,6 +502,7 @@ namespace XIVApp
                 Aggro = true;
             }
 
+            // Attack the aggroed creature. 
             if (Aggro && !Fighting)
             {
                 is_Mob_Valid = true;
@@ -518,6 +519,8 @@ namespace XIVApp
             #endregion
 
             #region Are we alive?
+
+            // We were killed. 
             if (Session.Player.Status == Status.Dead2)
             {
                 LevellingLog.AppendText("[" + DateTime.Now.ToLongTimeString() + "] " + "We died!!!" + Environment.NewLine);
@@ -525,6 +528,7 @@ namespace XIVApp
             }
             #endregion
 
+            // Calculate statistics
             #region Some nice stuff for the Stats
             seconds++;
             TimeSpan ds = TimeSpan.FromSeconds(seconds);
@@ -2154,39 +2158,31 @@ namespace XIVApp
         #endregion
 
         #region Mouse down events for skill menus
-        void SkillBoxFIGHTING_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void SkillBoxFIGHTING_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (Skill_List_fighting.Count > 0)
+            SetSelectedSkill(SkillBoxFIGHTING, Skill_List_fighting, e);
+        }
+        
+        private void SkillBoxSTART_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            SetSelectedSkill(SkillBoxSTART, Skill_List_start, e);
+        }
+        
+        private void SkillBoxEND_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        {            
+            SetSelectedSkill(SkillBoxEND, Skill_List_end, e);
+        }
+
+        public void SetSelectedSkill(ListBox skillsBox, List<String> skills, MouseEventArgs e)
+        { 
+            if(skills.Any())
             {
-                int index = SkillBoxFIGHTING.IndexFromPoint(e.X, e.Y);
-                if (index >= 0 && index < SkillBoxFIGHTING.Items.Count)
-                {
-                    SkillBoxFIGHTING.SelectedIndex = index;
-                }
+                int index = skillsBox.IndexFromPoint(e.X, e.Y);
+                if (index >= 0 && index < skillsBox.Items.Count)
+                    skillsBox.SelectedIndex = index;
             }
         }
-        void SkillBoxSTART_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
-        {
-            if (Skill_List_start.Count > 0)
-            {
-                int index = SkillBoxSTART.IndexFromPoint(e.X, e.Y);
-                if (index >= 0 && index < SkillBoxSTART.Items.Count)
-                {
-                    SkillBoxSTART.SelectedIndex = index;
-                }
-            }
-        }
-        void SkillBoxEND_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
-        {
-            if (Skill_List_end.Count > 0)
-            {
-                int index = SkillBoxEND.IndexFromPoint(e.X, e.Y);
-                if (index >= 0 && index < SkillBoxEND.Items.Count)
-                {
-                    SkillBoxEND.SelectedIndex = index;
-                }
-            }
-        }
+
         #endregion
 
         private void ChatlogBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -2227,10 +2223,8 @@ namespace XIVApp
         }
         private bool DeserializeXMLToData()
         {
-            if (!File.Exists(@"settings.xml"))
-            {
-                return false;
-            }
+            if (!File.Exists(@"settings.xml")) return false;
+
             XmlSerializer SerializerXML = new XmlSerializer(typeof(DataSerialization));
             FileStream XMLDataToRead = new FileStream(@"settings.xml", FileMode.Open, FileAccess.Read, FileShare.Read);
             DataSerialization XMLData = (DataSerialization)SerializerXML.Deserialize(XMLDataToRead);
@@ -2241,90 +2235,43 @@ namespace XIVApp
 
         private bool IsAbilityActive(StatusEffect ability)
         {
-            StatusEffect[] statuseffects = Session.Player.StatusEffects;
-            foreach (var statusEffect in statuseffects)
-            {
-                if (statusEffect == ability)
-                    return true;
-            }
-            return false;
+            return Session.Player.StatusEffects.Contains(ability);
         }
 
         private bool IsSpell(string[] Skill)
         {
-            if (Skill[0] == "/ma")
-                return true;
-            return false;
-
-            //throw new NotImplementedException();
+            return Skill[0].Equals("/ma");
         }
         private void RestUntilMPTextBox_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                if (Convert.ToInt16(RestUntilMPTextBox.Text) > 0)
-                {
-                    RestUntil_MP = Convert.ToInt16(RestUntilMPTextBox.Text);
-                    RestBelowMPCheckbox.Checked = true;
-                }
-            }
-            catch (Exception exc)
-            {
-                RestUntilMPTextBox.Text = "95";
-                RestBelowMPCheckbox.Checked = false;
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            RestUntil_MP = SetRestOption(RestBelowMPCheckbox, RestUntilMPTextBox, 95);
         }
 
         private void RestBelowMPTextbox_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                if (Convert.ToInt16(RestBelowMPTextbox.Text) > 0)
-                {
-                    Rest_MP = Convert.ToInt16(RestBelowMPTextbox.Text);
-                    RestBelowMPCheckbox.Checked = true;
-                }
-            }
-            catch (Exception exc)
-            {
-                RestBelowMPTextbox.Text = "95";
-                RestBelowMPCheckbox.Checked = false;
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            Rest_MP = SetRestOption(RestBelowMPCheckbox, RestBelowMPTextbox, 80);
         }
 
         private void RestUntilHPPTextbox_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                if (Convert.ToInt16(RestUntilHPPTextbox.Text) <= 100 && Convert.ToInt16(RestUntilHPPTextbox.Text) > 0)
-                {
-                    RestUntil_HPP = Convert.ToInt16(RestUntilHPPTextbox.Text);
-                    RestBelowHPCheckbox.Checked = true;
-                }
-            }
-            catch (Exception exc)
-            {
-                RestUntilHPPTextbox.Text = "95";
-                RestBelowHPCheckbox.Checked = false;
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            RestUntil_HPP = SetRestOption(RestBelowHPCheckbox, RestUntilHPPTextbox, 95);
         }
 
         private void RestBelowTextbox_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                Rest_HPP = Convert.ToInt16(RestBelowTextbox.Text);
-                RestBelowHPCheckbox.Checked = true;
-            }
-            catch (Exception exc)
-            {
-                RestBelowTextbox.Text = "80";
-                RestBelowHPCheckbox.Checked = false;
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            SetRestOption(RestBelowHPCheckbox, RestBelowTextbox, 80);
+        }
+
+        public int SetRestOption(CheckBox check, TextBox data, int defvalue)
+        {
+            int value = 0;
+
+            if (check.Checked = int.TryParse(data.Text, out value))
+                data.Text = value.ToString();
+            else 
+                data.Text = defvalue.ToString();
+
+            return value;
         }
 
         private void RestAtEnd_CheckedChanged(object sender, EventArgs e)

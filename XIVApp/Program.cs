@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Disposables;
 using System.Windows.Forms;
 
 namespace XIVApp
@@ -10,10 +11,15 @@ namespace XIVApp
         /// </summary>
         [STAThread]
         static void Main()
-        {
+        {            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            var form = new Form1();
+
+            using (new CompositeDisposable())
+            {
+                Application.Run(form);
+            }            
         }
     }
 }
