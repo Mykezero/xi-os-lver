@@ -184,7 +184,7 @@ namespace XIVApp
         /// debuffs are casted on us or the person being powerleveled. 
         /// </summary>
         TimeSortedList<FFACETools.FFACE.ChatTools.ChatLine> ActionableWindow =
-            new TimeSortedList<FFACETools.FFACE.ChatTools.ChatLine>(35, 5);
+            new TimeSortedList<FFACETools.FFACE.ChatTools.ChatLine>(35, 1);
 
         // Parse Chatlog
         private void Chatlogtimer_Tick(object sender, EventArgs e)
@@ -192,26 +192,19 @@ namespace XIVApp
             FFACE.ChatTools.ChatLine NewLine = new FFACE.ChatTools.ChatLine();
 
             // Save and output all new chatlines. 
-            while (NewLine != null)
+            while ((NewLine = Session.Chat.GetNextLine(LineSettings.CleanAll)) != null)
             {
-                // Get our new color coded line            
-                NewLine = Session.Chat.GetNextLine(LineSettings.CleanAll);
+                // Change the color of the line to match the color in FFXI
+                ChatLog.SelectionColor = NewLine.Color;
 
-                // Check to make sure we have text
-                if (NewLine != null)
-                {
-                    // Change the color of the line to match the color in FFXI
-                    ChatLog.SelectionColor = NewLine.Color;
+                // Output our line to the textbox
+                ChatLog.AppendText("[" + NewLine.NowDate + "] " + NewLine.Text + Environment.NewLine);
 
-                    // Output our line to the textbox
-                    ChatLog.AppendText("[" + NewLine.NowDate + "] " + NewLine.Text + Environment.NewLine);
+                // Scroll our chatlog window to the last line
+                ChatLog.ScrollToCaret();
 
-                    // Scroll our chatlog window to the last line
-                    ChatLog.ScrollToCaret();
-
-                    // Store the chatline for later use casting NA spells. 
-                    ActionableWindow.AddItem(NewLine.NowDate, NewLine);
-                }
+                // Store the chatline for later use casting NA spells. 
+                ActionableWindow.AddItem(NewLine.NowDate, NewLine);
             }
 
             //--------------------------------------------------------------------------------
@@ -227,18 +220,8 @@ namespace XIVApp
                     {"sleep", "Cure"}
                 };
 
-                var lines = new List<FFACE.ChatTools.ChatLine>();
-                
-                foreach (var debuff in EffectNaDictionary.Keys)
-                {
-                    lines = ActionableWindow
-                        .GetValuesInWindow()
-                        .Where(x => x.Text.Contains(debuff))
-                        .ToList();
-                }
-
                 // Foreach line in our 30 second window. 
-                foreach (var line in lines)
+                foreach (var line in ActionableWindow.GetValuesInWindow())
                 {
                     // For all debuffs, if they are detected in the current line, cast a spell to remove them. 
                     foreach (KeyValuePair<String, String> debuffNaPair in EffectNaDictionary)
@@ -1827,10 +1810,8 @@ namespace XIVApp
                 string SkillList_Filename;
                 if (SaveDialog.ShowDialog() == DialogResult.OK)
                 {
-                    if (SaveDialog.FileName.Contains(".xiwsl"))
-                        SkillList_Filename = SaveDialog.FileName;
-                    else
-                        SkillList_Filename = SaveDialog.FileName + ".xiwsl";
+                    SkillList_Filename = SaveDialog.FileName.Contains(".xiwsl") ?
+                        SaveDialog.FileName : SaveDialog.FileName + ".xiwsl";
 
                     string[] break_filename = SaveDialog.FileName.Split('\\');
                     int name_pos = (break_filename.Count() - 1);
@@ -1901,54 +1882,49 @@ namespace XIVApp
         }
         //-----------------------------------------------------------------------------------------------
         // Powerlevelling
-        private void ManualSkillList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
         //-----------------------------------------------------------------------------------------------
         #region Enable Cure Buttons
         private void PLMemberA_TextChanged(object sender, EventArgs e)
         {
-            if (PLMemberA.Text.Length > 3)
-                CureAButton.Enabled = true;
-            else
-                CureAButton.Enabled = false;
+            EnabledCureButton(PLMemberA, CureAButton);
         }
+
         private void PLMemberB_TextChanged(object sender, EventArgs e)
         {
-            if (PLMemberB.Text.Length > 3)
-                CureBButton.Enabled = true;
-            else
-                CureBButton.Enabled = false;
+            EnabledCureButton(PLMemberB, CureBButton);
         }
+
         private void PLMemberC_TextChanged(object sender, EventArgs e)
         {
-            if (PLMemberC.Text.Length > 3)
-                CureCButton.Enabled = true;
-            else
-                CureCButton.Enabled = false;
+            EnabledCureButton(PLMemberC, CureCButton);
         }
+
         private void PLMemberD_TextChanged(object sender, EventArgs e)
         {
-            if (PLMemberD.Text.Length > 3)
-                CureDButton.Enabled = true;
-            else
-                CureDButton.Enabled = false;
+            EnabledCureButton(PLMemberD, CureDButton);
         }
+
         private void PLMemberE_TextChanged(object sender, EventArgs e)
         {
-            if (PLMemberE.Text.Length > 3)
-                CureEButton.Enabled = true;
-            else
-                CureEButton.Enabled = false;
+            EnabledCureButton(PLMemberE, CureEButton);
         }
+
         private void PLMemberF_TextChanged(object sender, EventArgs e)
         {
-            if (PLMemberF.Text.Length > 3)
-                CureFButton.Enabled = true;
-            else
-                CureFButton.Enabled = false;
+            EnabledCureButton(PLMemberF, CureFButton);
         }
+
+        /// <summary>
+        /// Makes a button enabled if the player's name is atleast 
+        /// three characters long. 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="button"></param>
+        private void EnabledCureButton(TextBox name, Button button)
+        {
+            button.Enabled = name.Text.Length > 3;
+        }
+
         #endregion
 
         #region Cure Buttons
@@ -2099,11 +2075,8 @@ namespace XIVApp
         }
         private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
         {
-            if (FollowingCharacter)
-                FollowingCharacter = false;
-            else
-                FollowingCharacter = true;
-
+            // Switch whether we are following or not. 
+            FollowingCharacter = !FollowingCharacter;
             InformationLabel.Text = PowerSession.Player.Name + Resources.Form1_checkBox1_CheckedChanged_1__will_auto_follow__ + PLFollowingChar.Text;
         }
         private void ClearLogButton_Click(object sender, EventArgs e)
@@ -2130,31 +2103,38 @@ namespace XIVApp
 
         private void AlwaysOnTop_CheckedChanged(object sender, EventArgs e)
         {
-            if (AlwaysOnTop.Checked)
-                this.TopMost = true;
-            else
-                this.TopMost = false;
+            this.TopMost = AlwaysOnTop.Checked;
         }
 
         #region Delete actions for skill menus
         private void removeSkillToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int index = SkillBoxFIGHTING.SelectedIndex;
-            SkillBoxFIGHTING.Items.RemoveAt(index);
-            Skill_List_fighting.RemoveAt(index);
+            RemoveSkill(SkillBoxFIGHTING, Skill_List_fighting);
         }
+
         private void RemoveSTART_Opening(object sender, CancelEventArgs e)
         {
-            int index = SkillBoxSTART.SelectedIndex;
-            SkillBoxSTART.Items.RemoveAt(index);
-            Skill_List_start.RemoveAt(index);
+            RemoveSkill(SkillBoxSTART, Skill_List_start);
         }
+
         private void RemoveEND_Opening(object sender, CancelEventArgs e)
         {
-            int index = SkillBoxEND.SelectedIndex;
-            SkillBoxEND.Items.RemoveAt(index);
-            Skill_List_end.RemoveAt(index);
+            RemoveSkill(SkillBoxEND, Skill_List_end);
         }
+
+        /// <summary>
+        /// Remove a skill from a skill box. 
+        /// </summary>
+        /// <param name="skillBox"></param>
+        /// <param name="skills"></param>
+        private void RemoveSkill(ListBox skillBox, List<String> skills)
+        {
+            var index = skillBox.SelectedIndex;
+            if (index < 0) return;
+            skills.RemoveAt(index);
+            skillBox.Items.RemoveAt(index);
+        }
+
         #endregion
 
         #region Mouse down events for skill menus
@@ -2162,20 +2142,26 @@ namespace XIVApp
         {
             SetSelectedSkill(SkillBoxFIGHTING, Skill_List_fighting, e);
         }
-        
+
         private void SkillBoxSTART_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             SetSelectedSkill(SkillBoxSTART, Skill_List_start, e);
         }
-        
+
         private void SkillBoxEND_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
-        {            
+        {
             SetSelectedSkill(SkillBoxEND, Skill_List_end, e);
         }
 
+        /// <summary>
+        /// Sets a skill as selected by mouse coordinates. 
+        /// </summary>
+        /// <param name="skillsBox"></param>
+        /// <param name="skills"></param>
+        /// <param name="e"></param>
         public void SetSelectedSkill(ListBox skillsBox, List<String> skills, MouseEventArgs e)
-        { 
-            if(skills.Any())
+        {
+            if (skills.Any())
             {
                 int index = skillsBox.IndexFromPoint(e.X, e.Y);
                 if (index >= 0 && index < skillsBox.Items.Count)
@@ -2262,13 +2248,21 @@ namespace XIVApp
             SetRestOption(RestBelowHPCheckbox, RestBelowTextbox, 80);
         }
 
+        /// <summary>
+        /// Tries to set a resting option and, on failure,  
+        /// will set the default values for that option. 
+        /// </summary>
+        /// <param name="check"></param>
+        /// <param name="data"></param>
+        /// <param name="defvalue"></param>
+        /// <returns></returns>
         public int SetRestOption(CheckBox check, TextBox data, int defvalue)
         {
             int value = 0;
 
             if (check.Checked = int.TryParse(data.Text, out value))
                 data.Text = value.ToString();
-            else 
+            else
                 data.Text = defvalue.ToString();
 
             return value;
@@ -2282,11 +2276,6 @@ namespace XIVApp
                 RestUntilMPTextBox.Text = Session.Player.MPMax.ToString();
                 LevellingTabs.SelectedIndex = 5;
             }
-        }
-
-        private void MoveItemsToSatchel()
-        {
-
         }
     }
 }

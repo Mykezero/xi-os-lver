@@ -2189,7 +2189,6 @@ namespace XIVApp
             this.ManualSkillList.Name = "ManualSkillList";
             this.ManualSkillList.Size = new System.Drawing.Size(117, 23);
             this.ManualSkillList.TabIndex = 9;
-            this.ManualSkillList.SelectedIndexChanged += new System.EventHandler(this.ManualSkillList_SelectedIndexChanged);
             // 
             // label6
             // 
