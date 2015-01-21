@@ -309,8 +309,8 @@ namespace XIVApp
                     int percent2 = 50;
                     if (!String.IsNullOrEmpty(PowerSession.Target.Name))
                     {
-                        percent = Convert.ToInt16(AutoHealPercent.Text);
-                        percent2 = Convert.ToInt16(AutoHealPercent2.Text);
+                        percent = SetOption(AutoHealPercent, 75);
+                        percent2 = SetOption(AutoHealPercent2, 50);
                     }
 
                     if (PowerSession.Target.HPPCurrent < percent2 && PowerSession.Target.Name == PLMemberA.Text && PowerSession.Target.Status != Status.Dead2)
@@ -1428,94 +1428,60 @@ namespace XIVApp
         // Way Poitn Options
         private void WayPointWaitInput_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                WP_Wait = Convert.ToInt16(WayPointWaitInput.Text);
-            }
-            catch (Exception exc)
-            {
-                WayPointWaitInput.Text = "12";
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            WP_Wait = SetOption(WayPointWaitInput, 12);
         }
         private void CameraStrengthInput_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                Camera_Strength = Convert.ToInt16(CameraStrengthInput.Text);
-            }
-            catch (Exception exc)
-            {
-                CameraStrengthInput.Text = "4";
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            Camera_Strength = SetOption(CameraStrengthInput, 4);
         }
         private void DistanceTillAttackInput_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                range = Convert.ToDouble(DistanceTillAttackInput.Text);
-            }
-            catch (Exception exc)
-            {
-                DistanceTillAttackInput.Text = "5.5";
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            range = SetOption(DistanceTillAttackInput, 5.5);
         }
+
         private void WayPointScanningInput_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                Scan_At_Every_Waypoints = Convert.ToInt16(WayPointScanningInput.Text);
-            }
-            catch (Exception exc)
-            {
-                WayPointScanningInput.Text = "3";
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            Scan_At_Every_Waypoints = SetOption(WayPointScanningInput, 3);
         }
         private void StartDelayInput_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                Start_Delay = Convert.ToInt16(StartDelayInput.Text);
-            }
-            catch (Exception exc)
-            {
-                StartDelayInput.Text = "5";
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            Start_Delay = SetOption(StartDelayInput, 5);
         }
         private void TPPercentToWS_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                TP_To_Ws = Convert.ToInt16(TPPercentToWS.Text);
-            }
-            catch (Exception exc)
-            {
-                TPPercentToWS.Text = "1000";
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            TP_To_Ws = SetOption(TPPercentToWS, 1000);
         }
 
         private void TPMobHPP_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                TP_To_Ws_Mob_HPP = Convert.ToInt16(TPMobHPP.Text);
-            }
-            catch (Exception exc)
-            {
-                TPMobHPP.Text = "0";
-                DebugBox.AppendText("Error: " + exc.Message + Environment.NewLine);
-            }
+            TP_To_Ws_Mob_HPP = SetOption(TPMobHPP, 0);
         }
 
-        private void DistanceBeforeAction_TextChanged(object sender, EventArgs e)
+        public int SetOption(TextBox data, int defvalue)
         {
+            int value = 0;
 
+            if (!int.TryParse(data.Text, out value))
+            {
+                data.Text = defvalue.ToString();
+                return defvalue;
+            }
+
+            return value;
         }
+
+        public double SetOption(TextBox data, double defvalue)
+        {
+            double value = 0;
+
+            if (!double.TryParse(data.Text, out value))
+            {
+                data.Text = defvalue.ToString();
+                return defvalue;
+            }
+
+            return value;
+        }        
 
         // Stuff for if we die
         private int DeathWait = 300;
@@ -1863,15 +1829,7 @@ namespace XIVApp
         // Change waypoint Speed
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                WaypointRecrd.Interval = Convert.ToInt16(WayPointRecordSpeedInput.Text);
-            }
-            catch (Exception exc)
-            {
-                WayPointRecordSpeedInput.Text = "5000";
-                DebugBox.AppendText(exc.Message + Environment.NewLine);
-            }
+            WaypointRecrd.Interval = SetOption(WayPointRecordSpeedInput, 5000);
         }
         #endregion
         //-----------------------------------------------------------------------------------------------
@@ -1930,27 +1888,27 @@ namespace XIVApp
         #region Cure Buttons
         // Cure Buttons
         private bool switchheal = true;
-        
+
         private void CureAButton_Click(object sender, EventArgs e)
         {
             SwitchCure(PLMemberA.Text);
         }
-        
+
         private void CureBButton_Click(object sender, EventArgs e)
         {
             SwitchCure(PLMemberB.Text);
         }
-        
+
         private void CureCButton_Click(object sender, EventArgs e)
         {
             SwitchCure(PLMemberC.Text);
         }
-        
+
         private void CureDButton_Click(object sender, EventArgs e)
         {
             SwitchCure(PLMemberD.Text);
         }
-        
+
         private void CureEButton_Click(object sender, EventArgs e)
         {
             SwitchCure(PLMemberE.Text);
@@ -2183,22 +2141,22 @@ namespace XIVApp
         }
         private void RestUntilMPTextBox_TextChanged(object sender, EventArgs e)
         {
-            RestUntil_MP = SetRestOption(RestBelowMPCheckbox, RestUntilMPTextBox, 95);
+            RestUntil_MP = SetOption(RestBelowMPCheckbox, RestUntilMPTextBox, 95);
         }
 
         private void RestBelowMPTextbox_TextChanged(object sender, EventArgs e)
         {
-            Rest_MP = SetRestOption(RestBelowMPCheckbox, RestBelowMPTextbox, 80);
+            Rest_MP = SetOption(RestBelowMPCheckbox, RestBelowMPTextbox, 80);
         }
 
         private void RestUntilHPPTextbox_TextChanged(object sender, EventArgs e)
         {
-            RestUntil_HPP = SetRestOption(RestBelowHPCheckbox, RestUntilHPPTextbox, 95);
+            RestUntil_HPP = SetOption(RestBelowHPCheckbox, RestUntilHPPTextbox, 95);
         }
 
         private void RestBelowTextbox_TextChanged(object sender, EventArgs e)
         {
-            SetRestOption(RestBelowHPCheckbox, RestBelowTextbox, 80);
+            SetOption(RestBelowHPCheckbox, RestBelowTextbox, 80);
         }
 
         /// <summary>
@@ -2209,7 +2167,7 @@ namespace XIVApp
         /// <param name="data"></param>
         /// <param name="defvalue"></param>
         /// <returns></returns>
-        public int SetRestOption(CheckBox check, TextBox data, int defvalue)
+        public int SetOption(CheckBox check, TextBox data, int defvalue)
         {
             int value = 0;
 
