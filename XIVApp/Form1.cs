@@ -1930,96 +1930,49 @@ namespace XIVApp
         #region Cure Buttons
         // Cure Buttons
         private bool switchheal = true;
+        
         private void CureAButton_Click(object sender, EventArgs e)
         {
-            if (switchheal)
-            {
-                string Command = "/ma \"" + ManualSkillList.SelectedItem + "\" " + PLMemberA.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = false;
-            }
-            else
-            {
-                string Command = "/ma \"" + ManualSkillList2.SelectedItem + "\" " + PLMemberA.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = true;
-            }
+            SwitchCure(PLMemberA.Text);
         }
+        
         private void CureBButton_Click(object sender, EventArgs e)
         {
-            if (switchheal)
-            {
-                string Command = "/ma \"" + ManualSkillList.SelectedItem + "\" " + PLMemberB.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = false;
-            }
-            else
-            {
-                string Command = "/ma \"" + ManualSkillList2.SelectedItem + "\" " + PLMemberB.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = true;
-            }
+            SwitchCure(PLMemberB.Text);
         }
+        
         private void CureCButton_Click(object sender, EventArgs e)
         {
-            if (switchheal)
-            {
-                string Command = "/ma \"" + ManualSkillList.SelectedItem + "\" " + PLMemberC.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = false;
-            }
-            else
-            {
-                string Command = "/ma \"" + ManualSkillList2.SelectedItem + "\" " + PLMemberC.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = true;
-            }
+            SwitchCure(PLMemberC.Text);
         }
+        
         private void CureDButton_Click(object sender, EventArgs e)
         {
-            if (switchheal)
-            {
-                string Command = "/ma \"" + ManualSkillList.SelectedItem + "\" " + PLMemberD.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = false;
-            }
-            else
-            {
-                string Command = "/ma \"" + ManualSkillList2.SelectedItem + "\" " + PLMemberD.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = true;
-            }
+            SwitchCure(PLMemberD.Text);
         }
+        
         private void CureEButton_Click(object sender, EventArgs e)
         {
-            if (switchheal)
-            {
-                string Command = "/ma \"" + ManualSkillList.SelectedItem + "\" " + PLMemberE.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = false;
-            }
-            else
-            {
-                string Command = "/ma \"" + ManualSkillList2.SelectedItem + "\" " + PLMemberE.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = true;
-            }
+            SwitchCure(PLMemberE.Text);
         }
+
         private void CureFButton_Click(object sender, EventArgs e)
         {
-            if (switchheal)
-            {
-                string Command = "/ma \"" + ManualSkillList.SelectedItem + "\" " + PLMemberF.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = false;
-            }
-            else
-            {
-                string Command = "/ma \"" + ManualSkillList2.SelectedItem + "\" " + PLMemberF.Text + "";
-                PowerSession.Windower.SendString(Command);
-                switchheal = true;
-            }
+            SwitchCure(PLMemberF.Text);
         }
+
+        /// <summary>
+        /// Alternates casting of the two selected cures in
+        /// the manual skill lists when the cure button is pressed. 
+        /// </summary>
+        /// <param name="name"></param>
+        public void SwitchCure(String name)
+        {
+            var command = (switchheal ? ManualSkillList.SelectedItem : ManualSkillList2.SelectedItem).ToString();
+            PowerSession.Windower.SendString(String.Join(" ", "/ma", command, name));
+            switchheal = !switchheal;
+        }
+
         private void PLHealButton_Click(object sender, EventArgs e)
         {
             string Command = "/heal";
